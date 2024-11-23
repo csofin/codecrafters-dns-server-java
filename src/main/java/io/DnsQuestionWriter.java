@@ -8,20 +8,11 @@ import dns.DnsType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
-import java.util.Objects;
 
-public class DnsQuestionWriter implements Writer {
-
-    private final DnsQuestion question;
-
-    public DnsQuestionWriter(DnsQuestion question) {
-        Objects.requireNonNull(question);
-
-        this.question = question;
-    }
+public class DnsQuestionWriter implements Writer<DnsQuestion> {
 
     @Override
-    public byte[] write() {
+    public byte[] write(DnsQuestion question) {
         List<byte[]> labels = question.getLabels()
                 .stream()
                 .map(DnsLabel::toByteArray)

@@ -7,12 +7,14 @@ import java.util.Objects;
  */
 public final class DnsHeader implements DnsRecord {
 
-    private static final short FLAG_MASK_QR_INDICATOR = (short) 0x8000;
-    private static final short FLAG_MASK_AUTHORITATIVE = (short) 0x400;
-    private static final short FLAG_MASK_TRUNCATED = (short) 0x200;
-    private static final short FLAG_MASK_RECURSION_DESIRED = (short) 0x100;
-    private static final short FLAG_MASK_RECURSION_AVAILABLE = (short) 0x80;
-    private static final short FLAG_MASK_CODE = (short) 0x0F;
+    public static final int HEADER_SIZE_BYTES = 12;
+
+    public static final short FLAG_MASK_QR_INDICATOR = (short) 0x8000;
+    public static final short FLAG_MASK_AUTHORITATIVE = (short) 0x400;
+    public static final short FLAG_MASK_TRUNCATED = (short) 0x200;
+    public static final short FLAG_MASK_RECURSION_DESIRED = (short) 0x100;
+    public static final short FLAG_MASK_RECURSION_AVAILABLE = (short) 0x80;
+    public static final short FLAG_MASK_CODE = (short) 0x0F;
 
     // Packet Identifier (ID) - 16 bits
     private final short identifier;
@@ -60,34 +62,32 @@ public final class DnsHeader implements DnsRecord {
         return identifier;
     }
 
-    public short getFlags() {
-        short flags = 0;
+    public DnsPacketIndicator getQrIndicator() {
+        return qrIndicator;
+    }
 
-        if (qrIndicator == DnsPacketIndicator.RESPONSE) {
-            flags ^= FLAG_MASK_QR_INDICATOR;
-        }
+    public byte getOperationCode() {
+        return operationCode;
+    }
 
-        flags ^= (short) ((operationCode & FLAG_MASK_CODE) << 11);
+    public boolean isAuthoritative() {
+        return isAuthoritative;
+    }
 
-        if (isAuthoritative) {
-            flags ^= FLAG_MASK_AUTHORITATIVE;
-        }
+    public boolean isTruncated() {
+        return isTruncated;
+    }
 
-        if (isTruncated) {
-            flags ^= FLAG_MASK_TRUNCATED;
-        }
+    public boolean isRecursionDesired() {
+        return isRecursionDesired;
+    }
 
-        if (isRecursionDesired) {
-            flags ^= FLAG_MASK_RECURSION_DESIRED;
-        }
+    public boolean isRecursionAvailable() {
+        return isRecursionAvailable;
+    }
 
-        if (isRecursionAvailable) {
-            flags ^= FLAG_MASK_RECURSION_AVAILABLE;
-        }
-
-        flags ^= (short) (responseCode & FLAG_MASK_CODE);
-
-        return flags;
+    public byte getResponseCode() {
+        return responseCode;
     }
 
     public short getQuestionCount() {

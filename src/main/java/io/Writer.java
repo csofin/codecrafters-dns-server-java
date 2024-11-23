@@ -1,6 +1,8 @@
 package io;
 
+import dns.DnsRecord;
+
 @FunctionalInterface
-public interface Writer {
-    byte[] write();
+public interface Writer<T extends DnsRecord> {
+    byte[] write(T record);
 }

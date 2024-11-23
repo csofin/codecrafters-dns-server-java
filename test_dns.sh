@@ -40,6 +40,30 @@ function write_answer() {
   printf 'Received reply with answer label codecrafters.io\nTest Passed\n'
 }
 
+function parse_header() {
+  printf 'Running test for Stage #UC8 (Parse header section)\n'
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io)
+  header=$(echo "$out" | grep "HEADER")
+  if [ -z "$header" ]; then
+    printf 'Expected reply with header\nTest Failed'
+    exit 1
+  fi
+  printf '%s\n' "$header"
+  question=$(echo "$out" | grep -A 2 "QUESTION SECTION")
+  if [ -z "$question" ]; then
+    printf 'Expected reply with question section\nTest Failed'
+    exit 1
+  fi
+  printf '%s\n' "$question"
+  answer=$(echo "$out" | grep -A 2 "ANSWER SECTION")
+  if [ -z "$answer" ]; then
+    printf 'Expected reply with answer section\nTest Failed'
+    exit 1
+  fi
+  printf '%s\n' "$answer"
+  printf 'Received reply with header, question and answer\nTest Passed\n'
+}
+
 function test() {
   connect
   printf '\n'
@@ -48,6 +72,8 @@ function test() {
   write_question
   printf '\n'
   write_answer
+  printf '\n'
+  parse_header
 }
 
 if [ $# -eq 0 ]; then
