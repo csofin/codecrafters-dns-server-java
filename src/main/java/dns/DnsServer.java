@@ -2,6 +2,7 @@ package dns;
 
 import config.Environment;
 import io.DnsHeaderWriter;
+import io.DnsQuestionWriter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -24,12 +25,21 @@ public final class DnsServer {
                 DnsHeader header = DnsHeader.builder()
                         .withIdentifier((short) 1234)
                         .withQRIndicator(DnsPacketIndicator.RESPONSE)
+                        .withQuestionCount((short) 1)
                         .build();
 
-                DnsHeaderWriter writer = new DnsHeaderWriter(header);
+                DnsQuestion question = DnsQuestion.builder()
+                        .forName("codecrafters.io")
+                        .withDnsType(DnsType.A)
+                        .withDnsClass(DnsClass.IN)
+                        .build();
+
+                DnsHeaderWriter headerWriter = new DnsHeaderWriter(header);
+                DnsQuestionWriter questionWriter = new DnsQuestionWriter(question);
 
                 byte[] responseBuffer = ByteBuffer.allocate(512)
-                        .put(writer.write())
+                        .put(headerWriter.write())
+                        .put(questionWriter.write())
                         .array();
 
                 final DatagramPacket response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());

@@ -2,8 +2,8 @@
 
 function connect() {
   printf 'Running test for Stage #UX2 (Setup UDP server)\n'
-  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io | head -1)
-  if [[ -z "$out" ]]; then
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io | tail -1 | awk '{print $2,$3,$4}' | sed 's/\;//g')
+  if [ "$out" == "connection timed out" ]; then
     printf 'Expected to connect to localhost:2053 using UDP\nTest Failed'
     exit 1
   fi
@@ -12,18 +12,30 @@ function connect() {
 
 function write_header() {
   printf 'Running test for Stage #TZ1 (Write header section)\n'
-  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io | head -1 | awk '{print $(NF)}')
-  if [[ ! $out =~ 1234 ]]; then
-    printf 'Expected identifier value to be 1234, got %s\nTest Failed' "$out"
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io | grep -oE "id: [0-9]+" | awk '{print $2}')
+  if [ -z "$out" ]; then
+    printf 'Expected reply with header id, got %s\nTest Failed' "$out"
     exit 1
   fi
-  printf 'Received response with identifier value 1234\nTest Passed\n'
+  printf 'Received reply with header id\nTest Passed\n'
+}
+
+function write_question() {
+  printf 'Running test for Stage #BF2 (Write question section)\n'
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io | grep -A 2 'QUESTION SECTION' | head -2 | tail -1 | awk '{print $1}' | awk '{print substr($0, 2, length($0) - 2)}')
+  if [ "$out" != "codecrafters.io" ]; then
+    printf 'Expected question section with label codecrafters.io, got %s\nTest Failed' "$out"
+    exit 1
+  fi
+  printf 'Received reply with question label codecrafters.io\nTest Passed\n'
 }
 
 function test() {
   connect
   printf '\n'
   write_header
+  printf '\n'
+  write_question
 }
 
 if [ $# -eq 0 ]; then

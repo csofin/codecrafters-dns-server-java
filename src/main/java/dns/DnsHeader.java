@@ -3,7 +3,7 @@ package dns;
 import java.util.Objects;
 
 /**
- * https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
+ * https://www.rfc-editor.org/rfc/rfc1035#section-4.1.1
  */
 public final class DnsHeader implements DnsRecord {
 
