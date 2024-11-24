@@ -15,8 +15,8 @@ public class DnsMessageWriter implements Writer<DnsMessage> {
                 .allocate(Environment.BUFFER_SIZE)
                 .order(ByteOrder.BIG_ENDIAN)
                 .put(WriterFactory.write(buildHeader(message)))
-                .put(WriterFactory.write(sampleQuestion()))
-                .put(WriterFactory.write(sampleAnswer()))
+                .put(WriterFactory.write(buildQuestion(message)))
+                .put(WriterFactory.write(buildAnswer(message)))
                 .array();
     }
 
@@ -35,19 +35,15 @@ public class DnsMessageWriter implements Writer<DnsMessage> {
                 .build();
     }
 
-    private DnsQuestion sampleQuestion() {
-        return DnsQuestion.builder()
-                .forName("codecrafters.io")
-                .withDnsType(DnsType.A)
-                .withDnsClass(DnsClass.IN)
-                .build();
+    private DnsQuestion buildQuestion(DnsMessage message) {
+        return message.getQuestion();
     }
 
-    private DnsAnswer sampleAnswer() {
+    private DnsAnswer buildAnswer(DnsMessage message) {
         byte[] rdata = new byte[4];
         Arrays.fill(rdata, (byte) 8);
         return DnsAnswer.builder()
-                .forName("codecrafters.io")
+                .forName(message.getQuestion().getName())
                 .withDnsType(DnsType.A)
                 .withDnsClass(DnsClass.IN)
                 .withTTL(42)

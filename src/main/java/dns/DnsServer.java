@@ -21,7 +21,7 @@ public final class DnsServer {
                 serverSocket.receive(request);
                 DnsMessage message = new DnsMessageReader().read(ByteBuffer.wrap(requestBuffer));
 
-                byte[] responseBuffer = new DnsMessageWriter().write(message);
+                byte[] responseBuffer = WriterFactory.write(message);
                 final DatagramPacket response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
                 serverSocket.send(response);
             }

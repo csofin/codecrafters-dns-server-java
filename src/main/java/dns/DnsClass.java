@@ -1,5 +1,8 @@
 package dns;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * https://www.rfc-editor.org/rfc/rfc1035#section-3.2.4
  */
@@ -23,5 +26,11 @@ public enum DnsClass {
 
     public int getValue() {
         return value;
+    }
+
+    public static Optional<DnsClass> findDnsClass(short value) {
+        return Arrays.stream(DnsClass.values())
+                .filter(c -> c.value == value)
+                .findFirst();
     }
 }

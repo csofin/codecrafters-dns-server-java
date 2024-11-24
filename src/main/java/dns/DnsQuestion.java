@@ -5,6 +5,7 @@ import util.Validator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * https://www.rfc-editor.org/rfc/rfc1035#section-4.1.2
@@ -25,6 +26,10 @@ public final class DnsQuestion implements DnsRecord {
                 List.copyOf(builder.labels);
         this.dnsType = builder.dnsType;
         this.dnsClass = builder.dnsClass;
+    }
+
+    public String getName() {
+        return labels.stream().map(DnsLabel::content).collect(Collectors.joining("."));
     }
 
     public List<DnsLabel> getLabels() {

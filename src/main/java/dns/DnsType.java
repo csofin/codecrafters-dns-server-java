@@ -2,6 +2,9 @@ package dns;
 
 import jdk.jfr.Experimental;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * https://www.rfc-editor.org/rfc/rfc1035#section-3.2.2
  */
@@ -49,5 +52,11 @@ public enum DnsType {
 
     public int getValue() {
         return value;
+    }
+
+    public static Optional<DnsType> findDnsType(short value) {
+        return Arrays.stream(DnsType.values())
+                .filter(t -> t.value == value)
+                .findFirst();
     }
 }
