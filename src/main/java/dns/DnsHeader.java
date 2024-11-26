@@ -106,6 +106,11 @@ public final class DnsHeader implements DnsRecord {
         return additionalRecordsCount;
     }
 
+    @Override
+    public int getSize() {
+        return HEADER_SIZE_BYTES;
+    }
+
     public static DnsHeader.Builder builder() {
         return new DnsHeader.Builder();
     }

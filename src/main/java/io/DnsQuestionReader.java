@@ -1,39 +1,59 @@
 package io;
 
-import dns.DnsClass;
-import dns.DnsQuestion;
-import dns.DnsType;
+import config.Environment;
+import dns.*;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
-public class DnsQuestionReader implements Reader<DnsQuestion> {
+public class DnsQuestionReader extends Reader {
 
     @Override
-    public DnsQuestion read(ByteBuffer buffer) {
-        DnsQuestion.Builder question = DnsQuestion.builder();
+    public void read(ByteBuffer buffer, DnsMessage.Builder message) {
+        int usedSize = message.getHeader().getSize();
+        ByteBuffer questionBuffer = buffer.slice(usedSize, Environment.BUFFER_SIZE - usedSize);
 
-        List<byte[]> words = new ArrayList<>();
-        byte value = buffer.get();
-        while (value != 0) {
-            byte[] word = new byte[value];
-            buffer.get(word, 0, value);
-            words.add(word);
-            value = buffer.get();
+        int questionCount = message.getHeader().getQuestionCount();
+        if (questionCount == 0) {
+            return;
         }
 
-        String name = words.stream().map(String::new).collect(Collectors.joining("."));
-        question = question.forName(name);
+        Map<Integer, DnsLabel> labelMap = new HashMap<>();
 
-        DnsType dnsType = DnsType.findDnsType(buffer.getShort()).orElse(null);
-        question = question.withDnsType(dnsType);
+        for (int index = 0; index < questionCount; index++) {
+            DnsQuestion.Builder question = DnsQuestion.builder();
 
-        DnsClass dnsClass = DnsClass.findDnsClass(buffer.getShort()).orElse(null);
-        question = question.withDnsClass(dnsClass);
+            byte value = questionBuffer.get();
+            int position = questionBuffer.arrayOffset() + questionBuffer.position();
 
-        return question.build();
+            while (value > 0) {
+                byte[] word = new byte[value];
+                questionBuffer.get(word, 0, value);
+                DnsLabel label = new DnsLabel(new String(word, StandardCharsets.UTF_8), position);
+                labelMap.putIfAbsent(position, label);
+                question = question.addLabel(label);
+
+                value = questionBuffer.get();
+                position = questionBuffer.arrayOffset() + questionBuffer.position();
+            }
+
+            if (value < 0) {
+                byte pointer = questionBuffer.get();
+                DnsLabel label = labelMap.get(pointer + 1);
+                if (Objects.nonNull(label)) {
+                    question = question.addLabel(label);
+                }
+            }
+
+            DnsType dnsType = DnsType.findDnsType(questionBuffer.getShort()).orElse(null);
+            question = question.withDnsType(dnsType);
+
+            DnsClass dnsClass = DnsClass.findDnsClass(questionBuffer.getShort()).orElse(null);
+            question = question.withDnsClass(dnsClass);
+
+            message = message.addQuestion(question.build());
+        }
     }
 
 }

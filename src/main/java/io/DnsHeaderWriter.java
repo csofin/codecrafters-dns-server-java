@@ -13,7 +13,7 @@ public class DnsHeaderWriter implements Writer<DnsHeader> {
     @Override
     public byte[] write(DnsHeader header) {
         return ByteBuffer
-                .allocate(HEADER_SIZE_BYTES)
+                .allocate(header.getSize())
                 .order(ByteOrder.BIG_ENDIAN)
                 .putShort(header.getIdentifier())
                 .putShort(getFlags(header))

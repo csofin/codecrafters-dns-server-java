@@ -17,11 +17,10 @@ public final class DnsQuestion implements DnsRecord {
     private final DnsClass dnsClass;
 
     public DnsQuestion(DnsQuestion.Builder builder) {
-        Objects.requireNonNull(builder.name, "Name must not be null.");
         Objects.requireNonNull(builder.dnsType, "Type must not be null.");
         Objects.requireNonNull(builder.dnsClass, "Class must not be null.");
 
-        this.labels = builder.labels.isEmpty() ?
+        this.labels = Objects.nonNull(builder.name) ?
                 Validator.validateDomain(builder.name).stream().map(DnsLabel::new).toList() :
                 List.copyOf(builder.labels);
         this.dnsType = builder.dnsType;
@@ -29,7 +28,7 @@ public final class DnsQuestion implements DnsRecord {
     }
 
     public String getName() {
-        return labels.stream().map(DnsLabel::content).collect(Collectors.joining("."));
+        return labels.stream().map(DnsLabel::getContent).collect(Collectors.joining("."));
     }
 
     public List<DnsLabel> getLabels() {
@@ -42,6 +41,14 @@ public final class DnsQuestion implements DnsRecord {
 
     public DnsClass getDnsClass() {
         return dnsClass;
+    }
+
+    @Override
+    public int getSize() {
+        return labels.stream().mapToInt(l -> l.toByteArray().length).sum()
+                + 1 /* null byte */
+                + DnsType.TYPE_SIZE_BYTES
+                + DnsClass.CLASS_SIZE_BYTES;
     }
 
     public static Builder builder() {

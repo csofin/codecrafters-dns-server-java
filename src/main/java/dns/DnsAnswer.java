@@ -54,6 +54,17 @@ public final class DnsAnswer implements DnsRecord {
         return data;
     }
 
+    @Override
+    public int getSize() {
+        return labels.stream().mapToInt(l -> l.toByteArray().length).sum()
+                + 1 /* null byte */
+                + DnsType.TYPE_SIZE_BYTES
+                + DnsClass.CLASS_SIZE_BYTES
+                + 4 /* ttl */
+                + 2 /* rdlength */
+                + 4; /* rdata */
+    }
+
     public static Builder builder() {
         return new DnsAnswer.Builder();
     }

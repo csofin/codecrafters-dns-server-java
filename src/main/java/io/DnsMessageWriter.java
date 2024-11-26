@@ -6,44 +6,46 @@ import dns.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.List;
 
 public class DnsMessageWriter implements Writer<DnsMessage> {
 
     @Override
     public byte[] write(DnsMessage message) {
-        return ByteBuffer
-                .allocate(Environment.BUFFER_SIZE)
-                .order(ByteOrder.BIG_ENDIAN)
-                .put(WriterFactory.write(buildHeader(message)))
-                .put(WriterFactory.write(buildQuestion(message)))
-                .put(WriterFactory.write(buildAnswer(message)))
-                .array();
+        ByteBuffer buffer = ByteBuffer.allocate(Environment.BUFFER_SIZE).order(ByteOrder.BIG_ENDIAN);
+
+        DnsHeader header = buildHeader(message.getHeader(), message.getQuestions().size());
+        WriterFactory.write(header).ifPresent(buffer::put);
+
+        List<DnsQuestion> questions = List.copyOf(message.getQuestions());
+        questions.forEach(question -> WriterFactory.write(question).ifPresent(buffer::put));
+
+        List<DnsAnswer> answers = questions.stream().map(this::buildAnswer).toList();
+        answers.forEach(answer -> WriterFactory.write(answer).ifPresent(buffer::put));
+
+        return buffer.array();
     }
 
-    private DnsHeader buildHeader(DnsMessage message) {
+    private DnsHeader buildHeader(DnsHeader header, int recordCount) {
         return DnsHeader.builder()
-                .withIdentifier(message.getHeader().getIdentifier())
+                .withIdentifier(header.getIdentifier())
                 .withQRIndicator(DnsPacketIndicator.RESPONSE)
-                .withOperationCode(message.getHeader().getOperationCode())
+                .withOperationCode(header.getOperationCode())
                 .isAuthoritative(false)
                 .isTruncated(false)
-                .isRecursionDesired(message.getHeader().isRecursionDesired())
+                .isRecursionDesired(header.isRecursionDesired())
                 .isRecursionAvailable(false)
-                .withResponseCode((byte) (message.getHeader().getOperationCode() == 0 ? 0 : 4))
-                .withQuestionCount((short) 1)
-                .withAnswerRecordsCount((short) 1)
+                .withResponseCode((byte) (header.getOperationCode() == 0 ? 0 : 4))
+                .withQuestionCount((short) recordCount)
+                .withAnswerRecordsCount((short) recordCount)
                 .build();
     }
 
-    private DnsQuestion buildQuestion(DnsMessage message) {
-        return message.getQuestion();
-    }
-
-    private DnsAnswer buildAnswer(DnsMessage message) {
+    private DnsAnswer buildAnswer(DnsQuestion question) {
         byte[] rdata = new byte[4];
         Arrays.fill(rdata, (byte) 8);
         return DnsAnswer.builder()
-                .forName(message.getQuestion().getName())
+                .forName(question.getName())
                 .withDnsType(DnsType.A)
                 .withDnsClass(DnsClass.IN)
                 .withTTL(42)

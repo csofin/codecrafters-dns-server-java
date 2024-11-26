@@ -1,10 +1,16 @@
 package io;
 
-import dns.DnsRecord;
+import dns.DnsMessage;
 
 import java.nio.ByteBuffer;
 
-@FunctionalInterface
-public interface Reader<T extends DnsRecord> {
-    T read(ByteBuffer buffer);
+public abstract class Reader {
+
+    protected Reader nextReader;
+
+    public void setNextReader(Reader nextReader) {
+        this.nextReader = nextReader;
+    }
+
+    abstract void read(ByteBuffer buffer, DnsMessage.Builder message);
 }

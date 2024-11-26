@@ -1,30 +1,35 @@
 package io;
 
 import dns.DnsHeader;
+import dns.DnsMessage;
 import dns.DnsPacketIndicator;
 
 import java.nio.ByteBuffer;
 
 import static dns.DnsHeader.*;
 
-public class DnsHeaderReader implements Reader<DnsHeader> {
+public class DnsHeaderReader extends Reader {
 
     @Override
-    public DnsHeader read(ByteBuffer buffer) {
+    public void read(ByteBuffer buffer, DnsMessage.Builder message) {
+        ByteBuffer headerBuffer = buffer.slice(0, HEADER_SIZE_BYTES);
+
         DnsHeader.Builder header = DnsHeader.builder();
-        header.withIdentifier(buffer.getShort(0));
-        header.withQRIndicator(readPacketIndicator(buffer.getShort(2)));
-        header.withOperationCode(readOperationCode(buffer.getShort(2)));
-        header.isAuthoritative(readIsAuthoritative(buffer.getShort(2)));
-        header.isTruncated(readIsTruncated(buffer.getShort(2)));
-        header.isRecursionDesired(readIsRecursionDesired(buffer.getShort(2)));
-        header.isRecursionAvailable(readIsRecursionAvailable(buffer.getShort(2)));
-        header.withResponseCode(readResponseCode(buffer.getShort(2)));
+        header.withIdentifier(headerBuffer.getShort(0));
+        short flags = headerBuffer.getShort(2);
+        header.withQRIndicator(readPacketIndicator(flags));
+        header.withOperationCode(readOperationCode(flags));
+        header.isAuthoritative(readIsAuthoritative(flags));
+        header.isTruncated(readIsTruncated(flags));
+        header.isRecursionDesired(readIsRecursionDesired(flags));
+        header.isRecursionAvailable(readIsRecursionAvailable(flags));
+        header.withResponseCode(readResponseCode(flags));
         header.withQuestionCount(buffer.getShort(4));
         header.withAnswerRecordsCount(buffer.getShort(6));
         header.withAuthorityRecordsCount(buffer.getShort(8));
         header.withAdditionalRecordsCount(buffer.getShort(10));
-        return header.build();
+
+        nextReader.read(buffer, message.withHeader(header.build()));
     }
 
     private DnsPacketIndicator readPacketIndicator(short flags) {
