@@ -18,14 +18,13 @@ public final class DnsAnswer implements DnsRecord {
     private final byte[] data;
 
     public DnsAnswer(DnsAnswer.Builder builder) {
-        Objects.requireNonNull(builder.name, "Name must not be null.");
         Objects.requireNonNull(builder.dnsType, "Type must not be null.");
         if (builder.dnsType != DnsType.A) {
             throw new UnsupportedOperationException("Only type A is supported.");
         }
         Objects.requireNonNull(builder.dnsClass, "Class must not be null.");
 
-        this.labels = builder.labels.isEmpty() ?
+        this.labels = Objects.nonNull(builder.name) ?
                 Validator.validateDomain(builder.name).stream().map(DnsLabel::new).toList() :
                 List.copyOf(builder.labels);
         this.dnsType = builder.dnsType;
@@ -83,8 +82,8 @@ public final class DnsAnswer implements DnsRecord {
             return this;
         }
 
-        public Builder withLabels(DnsLabel... labels) {
-            this.labels = List.of(labels);
+        public Builder withLabels(List<DnsLabel> labels) {
+            this.labels.addAll(List.copyOf(labels));
             return this;
         }
 

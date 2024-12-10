@@ -6,13 +6,22 @@ import java.nio.ByteBuffer;
 
 public class DnsMessageReader {
 
-    public DnsMessage read(ByteBuffer buffer) {
+    private final ByteBuffer buffer;
+
+    public DnsMessageReader(ByteBuffer buffer) {
+        this.buffer = buffer;
+    }
+
+    public DnsMessage read() {
         DnsMessage.Builder message = DnsMessage.builder();
 
-        Reader headerReader = new DnsHeaderReader();
-        Reader questionReader = new DnsQuestionReader();
+        DnsHeaderReader headerReader = new DnsHeaderReader();
 
+        DnsQuestionReader questionReader = new DnsQuestionReader();
         headerReader.setNextReader(questionReader);
+
+        DnsAnswerReader answerReader = new DnsAnswerReader();
+        questionReader.setNextReader(answerReader);
 
         headerReader.read(buffer, message);
 

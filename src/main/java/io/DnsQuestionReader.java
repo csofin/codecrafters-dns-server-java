@@ -19,8 +19,6 @@ public class DnsQuestionReader extends Reader {
             return;
         }
 
-        Map<Integer, DnsLabel> labelMap = new HashMap<>();
-
         for (int index = 0; index < questionCount; index++) {
             DnsQuestion.Builder question = DnsQuestion.builder();
 
@@ -31,7 +29,6 @@ public class DnsQuestionReader extends Reader {
                 byte[] word = new byte[value];
                 questionBuffer.get(word, 0, value);
                 DnsLabel label = new DnsLabel(new String(word, StandardCharsets.UTF_8), position);
-                labelMap.putIfAbsent(position, label);
                 question = question.addLabel(label);
 
                 value = questionBuffer.get();
@@ -40,10 +37,19 @@ public class DnsQuestionReader extends Reader {
 
             if (value < 0) {
                 byte pointer = questionBuffer.get();
-                DnsLabel label = labelMap.get(pointer + 1);
-                if (Objects.nonNull(label)) {
-                    question = question.addLabel(label);
-                }
+                List<DnsLabel> labels = message.getQuestions()
+                        .stream()
+                        .filter(dnsQuestion -> dnsQuestion.getLabels()
+                                .stream()
+                                .anyMatch(dnsLabel -> dnsLabel.getPosition() == pointer + 1))
+                        .findFirst()
+                        .map(dnsQuestion -> dnsQuestion
+                                .getLabels()
+                                .stream()
+                                .filter(dnsLabel -> dnsLabel.getPosition() >= pointer)
+                                .toList())
+                        .orElse(List.of());
+                question = question.withLabels(labels);
             }
 
             DnsType dnsType = DnsType.findDnsType(questionBuffer.getShort()).orElse(null);
@@ -54,6 +60,8 @@ public class DnsQuestionReader extends Reader {
 
             message = message.addQuestion(question.build());
         }
+
+        handOverToNextReader(buffer, message);
     }
 
 }

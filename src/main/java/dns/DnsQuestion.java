@@ -1,7 +1,5 @@
 package dns;
 
-import util.Validator;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,9 +18,7 @@ public final class DnsQuestion implements DnsRecord {
         Objects.requireNonNull(builder.dnsType, "Type must not be null.");
         Objects.requireNonNull(builder.dnsClass, "Class must not be null.");
 
-        this.labels = Objects.nonNull(builder.name) ?
-                Validator.validateDomain(builder.name).stream().map(DnsLabel::new).toList() :
-                List.copyOf(builder.labels);
+        this.labels = List.copyOf(builder.labels);
         this.dnsType = builder.dnsType;
         this.dnsClass = builder.dnsClass;
     }
@@ -57,18 +53,12 @@ public final class DnsQuestion implements DnsRecord {
 
     public static class Builder {
 
-        private String name;
         private List<DnsLabel> labels = new ArrayList<>();
         private DnsType dnsType;
         private DnsClass dnsClass;
 
-        public Builder forName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder withLabels(DnsLabel... labels) {
-            this.labels = List.of(labels);
+        public Builder withLabels(List<DnsLabel> labels) {
+            this.labels.addAll(List.copyOf(labels));
             return this;
         }
 

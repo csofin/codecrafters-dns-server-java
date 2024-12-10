@@ -29,7 +29,6 @@ public class DnsLabel {
         return position;
     }
 
-    // <length><content>
     public byte[] toByteArray() {
         return ByteBuffer
                 .allocate(1 + content.length())

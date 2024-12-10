@@ -24,12 +24,12 @@ public class DnsHeaderReader extends Reader {
         header.isRecursionDesired(readIsRecursionDesired(flags));
         header.isRecursionAvailable(readIsRecursionAvailable(flags));
         header.withResponseCode(readResponseCode(flags));
-        header.withQuestionCount(buffer.getShort(4));
-        header.withAnswerRecordsCount(buffer.getShort(6));
-        header.withAuthorityRecordsCount(buffer.getShort(8));
-        header.withAdditionalRecordsCount(buffer.getShort(10));
+        header.withQuestionCount(headerBuffer.getShort(4));
+        header.withAnswerRecordsCount(headerBuffer.getShort(6));
+        header.withAuthorityRecordsCount(headerBuffer.getShort(8));
+        header.withAdditionalRecordsCount(headerBuffer.getShort(10));
 
-        nextReader.read(buffer, message.withHeader(header.build()));
+        handOverToNextReader(buffer, message.withHeader(header.build()));
     }
 
     private DnsPacketIndicator readPacketIndicator(short flags) {

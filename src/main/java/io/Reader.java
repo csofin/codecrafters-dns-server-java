@@ -3,6 +3,7 @@ package io;
 import dns.DnsMessage;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public abstract class Reader {
 
@@ -13,4 +14,11 @@ public abstract class Reader {
     }
 
     abstract void read(ByteBuffer buffer, DnsMessage.Builder message);
+
+    public void handOverToNextReader(ByteBuffer buffer, DnsMessage.Builder message) {
+        if (Objects.nonNull(nextReader)) {
+            nextReader.read(buffer, message);
+        }
+    }
+
 }

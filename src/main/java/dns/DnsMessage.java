@@ -64,8 +64,8 @@ public final class DnsMessage implements DnsRecord {
             return this;
         }
 
-        public Builder withQuestions(DnsQuestion... questions) {
-            this.questions = List.of(questions);
+        public Builder withQuestions(List<DnsQuestion> questions) {
+            this.questions.addAll(List.copyOf(questions));
             return this;
         }
 
@@ -78,13 +78,9 @@ public final class DnsMessage implements DnsRecord {
             return this;
         }
 
-        public Builder withAnswers(DnsAnswer... answers) {
-            this.answers = List.of(answers);
+        public Builder withAnswers(List<DnsAnswer> answers) {
+            this.answers.addAll(List.copyOf(answers));
             return this;
-        }
-
-        public List<DnsAnswer> getAnswers() {
-            return answers;
         }
 
         public DnsMessage build() {
