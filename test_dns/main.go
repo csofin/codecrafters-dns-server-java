@@ -55,9 +55,9 @@ func main() {
 		fmt.Println(answer.String())
 	}
 
-    if len(reply.Question) == len(request.Question) {
-        fmt.Println("Test Passed")
-    } else {
-        fmt.Println("Test Failed")
-    }
+	if len(reply.Question) == len(request.Question) {
+		fmt.Println("Test Passed")
+	} else {
+		fmt.Println("Test Failed")
+	}
 }
