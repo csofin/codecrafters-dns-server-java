@@ -93,7 +93,9 @@ public final class DnsServer {
                     .isRecursionDesired(request.getHeader().isRecursionDesired())
                     .build();
 
-            List<CompletableFuture<DnsMessage>> forwardMessageTasks = request.getQuestions().stream()
+            List<CompletableFuture<DnsMessage>> forwardMessageTasks = request
+                    .getQuestions()
+                    .stream()
                     .map(question -> DnsMessage.builder()
                             .withHeader(forwardHeader)
                             .addQuestion(question)

@@ -13,12 +13,13 @@ public abstract class Reader {
         this.nextReader = nextReader;
     }
 
-    abstract void read(ByteBuffer buffer, DnsMessage.Builder message);
-
-    public void handOverToNextReader(ByteBuffer buffer, DnsMessage.Builder message) {
+    void read(ByteBuffer buffer, DnsMessage.Builder message) {
+        readPart(buffer, message);
         if (Objects.nonNull(nextReader)) {
             nextReader.read(buffer, message);
         }
     }
+
+    abstract void readPart(ByteBuffer buffer, DnsMessage.Builder message);
 
 }

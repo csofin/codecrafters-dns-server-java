@@ -49,6 +49,12 @@ function parse_header() {
     exit 1
   fi
   printf '%s\n' "$header"
+  printf 'Received reply with header\nTest Passed\n'
+}
+
+function parse_question() {
+  printf 'Running test for Stage #HD8 (Parse question section)\n'
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io)
   question=$(echo "$out" | grep -A 2 "QUESTION SECTION")
   if [ -z "$question" ]; then
     printf 'Expected reply with question section\nTest Failed'
@@ -61,7 +67,24 @@ function parse_header() {
     exit 1
   fi
   printf '%s\n' "$answer"
-  printf 'Received reply with header, question and answer\nTest Passed\n'
+  printf 'Received reply with question and answer\nTest Passed\n'
+}
+
+function parse_compressed_packet() {
+  printf 'Running test for Stage #YC9 (Parse compressed packet)\n'
+  make -C test_dns/.
+}
+
+function forward() {
+  printf 'Running test for Stage #GT1 (Forwarding Server)\n'
+  out=$(dig +time=1 +tries=1 @localhost -p 2053 codecrafters.io)
+  answer=$(echo "$out" | grep -A 2 "ANSWER SECTION" | tail -2 | awk '{print $NF}')
+  if [ "$answer" != "76.76.21.21" ]; then
+    printf 'Expected answer section with rdata 76.76.21.21, got %s\nTest Failed' "$answer"
+    exit 1
+  fi
+  printf '%s\n' "$answer"
+  printf 'Received forwarded answer with expected rdata value\nTest Passed\n'
 }
 
 function test() {
@@ -74,6 +97,12 @@ function test() {
   write_answer
   printf '\n'
   parse_header
+  printf '\n'
+  parse_question
+  printf '\n'
+  parse_compressed_packet
+  printf '\n'
+  forward
 }
 
 if [ $# -eq 0 ]; then

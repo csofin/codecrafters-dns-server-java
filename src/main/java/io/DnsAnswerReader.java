@@ -10,7 +10,7 @@ import java.util.List;
 public class DnsAnswerReader extends Reader {
 
     @Override
-    public void read(ByteBuffer buffer, DnsMessage.Builder message) {
+    public void readPart(ByteBuffer buffer, DnsMessage.Builder message) {
         int usedSize = message.getHeader().getSize() + message.getQuestions().stream().mapToInt(DnsQuestion::getSize).sum();
         ByteBuffer answerBuffer = buffer.slice(usedSize, Environment.BUFFER_SIZE - usedSize);
 
@@ -63,8 +63,6 @@ public class DnsAnswerReader extends Reader {
 
             message = message.addAnswer(answer.build());
         }
-
-        handOverToNextReader(buffer, message);
     }
 
 }

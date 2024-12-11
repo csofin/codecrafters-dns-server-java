@@ -11,7 +11,7 @@ import static dns.DnsHeader.*;
 public class DnsHeaderReader extends Reader {
 
     @Override
-    public void read(ByteBuffer buffer, DnsMessage.Builder message) {
+    public void readPart(ByteBuffer buffer, DnsMessage.Builder message) {
         ByteBuffer headerBuffer = buffer.slice(0, HEADER_SIZE_BYTES);
 
         DnsHeader.Builder header = DnsHeader.builder();
@@ -29,7 +29,7 @@ public class DnsHeaderReader extends Reader {
         header.withAuthorityRecordsCount(headerBuffer.getShort(8));
         header.withAdditionalRecordsCount(headerBuffer.getShort(10));
 
-        handOverToNextReader(buffer, message.withHeader(header.build()));
+        message.withHeader(header.build());
     }
 
     private DnsPacketIndicator readPacketIndicator(short flags) {
